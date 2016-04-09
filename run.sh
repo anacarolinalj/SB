@@ -1,9 +1,18 @@
 #!/bin/bash
 
 gcc -Wall -std=c99 -g -o exe base64.c
-echo "Done with compilation"
 
-echo "Starting tests"
+./exe a.pdf 1
+diff a.pdf decodifica_64
+
+./exe b.mp3 1
+diff b.mp3 decodifica_64
+
+./exe c.jpg 1 
+diff c.jpg decodifica_64
+
+./exe d.mp4 1
+diff d.mp4 decodifica_64
 
 # simple tests codificacao
 #echo "real tests"
@@ -20,22 +29,28 @@ echo "Starting tests"
 #simple tests decodificacao
 #./exe real3.txt 2
 
-# teste integrando decodificacao e codificacao - da certo
-./exe ff 1
-./exe codifica_64 2
-diff ff decodifica_64
-echo "done"
+#./exe aa 1
+#diff aa decodifica_64
+#echo "done"
+
+#./exe real3.txt 1
+#diff real3.txt decodifica_64
+#echo "done"
+
+# teste integrando decodificacao e codificacao 
+#./exe ff 1
+#diff ff decodifica_64
+#echo "done"
 
 # teste integrando decodificacao e codificacao em um arquivo grande passado
 #./exe a.pdf 1
-#./exe codifica_64 2
 #diff a.pdf decodifica_64
 #echo "done"
 
+
 # teste integrando decodificacao e codificacao no mp3
 #./exe b.mp3 1
-#./exe codificado_64 2
-#diff b.mp3 decodifica-64
+#diff b.mp3 decodifica_64
 #echo "done"
 
 # teste integrando decodificacao e codificacao no .jpg

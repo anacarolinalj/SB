@@ -1,4 +1,7 @@
-#define CODIFICA 1
+#define CODIFICA_DECODIFICA 1
+#define CODIFICA 2
+#define DECODIFICA 3
+
 #define MEDIUM_SIZE 50
 #define MAX_SIZE 100
 #define BYTE_POR_VEZ 3
@@ -13,15 +16,15 @@ void codifica_64(char nome_arq[]);
 
 /* funcao para codificar uma string de comprimento 3 para base64
  */
-void codifica_64_comp3(char linha[], FILE* esc_arq);
+void codifica_64_comp3(uint8_t bits24[], FILE* esc_arq);
 
 /* funcao para codificar uma string de comprimento 2 para base64
  */
-void codifica_64_comp2(char linha[], FILE* esc_arq);
+void codifica_64_comp2(uint8_t bits24[], FILE* esc_arq);
 
 /* funcao para codificar uma string de comprimento 1 para base64
  */
-void codifica_64_comp1(char linha[], FILE* esc_arq);
+void codifica_64_comp1(uint8_t bits24[], FILE* esc_arq);
 
 /* 
  * funcao para decodificacao de um arquivo binario, usando base 64
@@ -38,4 +41,4 @@ void decodifica_64(char nome_arq[]);
  * funcao para decodificar uma string de comprimento 4
  * que foi codificada na base 64
  */
-void decodifica_64_24(char linha[], FILE* esc_arq);
+void decodifica_64_24(uint8_t bytes[], FILE* esc_arq);
