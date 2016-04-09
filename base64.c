@@ -5,7 +5,7 @@
 #include "base64.h" 
 
 // array que de um indice permitira obter a letra correspondente em base 64
-const char conversor[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+char conversor[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 int main(int argc, char* argv[])
 {   
@@ -40,10 +40,6 @@ int main(int argc, char* argv[])
         opcao = atoi(argv[2]);
     }
  
-    // teste
-    printf("%s\n", nome_arq);
-    printf("%d\n", opcao);
-
     // chama metodo conveniente, dependendo dos argumentos passados
     if (opcao == CODIFICA)
     {
@@ -63,7 +59,7 @@ void codifica_64(char nome_arq[])
     FILE *le_arq, *esc_arq;
 
     char linha[BYTE_POR_VEZ];
-    char nome_escrita[MEDIUM_SIZE] = "arquivo_codificado_64";
+        char nome_escrita[MEDIUM_SIZE] = "codifica_64";
     int comprimento;
 
     // abre arquivo binario para leitura do seu binario 
@@ -75,7 +71,7 @@ void codifica_64(char nome_arq[])
     }
 
     // abre arquivo binario para escrita
-    esc_arq = fopen(nome_escrita, "w");
+    esc_arq = fopen(nome_escrita, "wb");
     if (esc_arq == NULL)
     {
         printf("problema para gerar arquivo que sera escrito, programa termina com erro! \n");
@@ -91,7 +87,6 @@ void codifica_64(char nome_arq[])
         if (comprimento == 3)
         {
             codifica_64_comp3(linha, esc_arq); 
-
         }
 
         // se soh ha dois caracteres a considerar
@@ -121,13 +116,42 @@ void codifica_64(char nome_arq[])
 
 void decodifica_64(char nome_arq[])
 {
+    FILE *le_arq, *esc_arq;
+    char nome_escrita[MEDIUM_SIZE] = "decodifica_64";
+    char linha[4];
+
     // abre arquivo para leitura
-    
-    // vai lendo 4 caracteres por vez
-         
-    // decodifica sequencia de 4 caracteres 
-    
+    le_arq = fopen(nome_arq, "rb");
+    if (le_arq == NULL)
+    {
+        printf("problema na abertura do arquivo, programa termina com erro! \n");
+        exit(EXIT_FAILURE);
+    }
+
+    // abre arquivo para escrita
+    esc_arq = fopen(nome_escrita, "wb");
+    if (esc_arq == NULL)
+    {
+        printf("problema na abertura do arquivo, programa termina com erro! \n");
+        exit(EXIT_FAILURE);
+    }
+
+    // enquanto nao chegamos ao fim do arquivo
+    while((linha[0] = getc(le_arq)) != EOF)
+    {
+        // vai lendo 4 caracteres por vez, ja lemos o primeiro
+        linha[1] = getc(le_arq);
+        linha[2] = getc(le_arq);
+        linha[3] = getc(le_arq);
+
+        // decodifica sequencia de 4 caracteres
+        decodifica_64_24(linha, esc_arq);
+
+    }
+
     // fecha arquivos abertos
+    fclose(le_arq);
+    fclose(esc_arq);
 }
 
 void codifica_64_comp3(char linha[], FILE* esc_arq) 
@@ -201,4 +225,76 @@ void codifica_64_comp1(char linha[], FILE* esc_arq)
     // os dois ultimos simbolos sao sinais de igual
     putc('=', esc_arq);
     putc('=', esc_arq);
+}
+
+void decodifica_64_24(char linha[], FILE* esc_arq)
+{
+    int qtd_caracter, valor; 
+    int parte1, parte2, parte3;
+    int i = 0; 
+
+    // pega a quantidade de caracteres que a string contem
+    while (i < 4)
+    {
+        if (linha[i] == '=')
+        {
+            break;
+        }   
+
+        i++;
+    }
+    qtd_caracter = i - 1; 
+
+    // se a string tera 3 caracteres
+    if (qtd_caracter == 3)
+    {   
+        // pega o valor em bits da string
+        valor = (strchr(conversor, linha[0]) - conversor) << 18;
+        valor += (strchr(conversor, linha[1]) - conversor) << 12;
+        valor += (strchr(conversor, linha[2]) - conversor) << 6;
+        valor += (strchr(conversor, linha[3]) - conversor);
+        
+        // pega e imprime o valor de cada um dos 3 caracteres individualmente
+        parte1 = valor & 0xFF0000;
+        parte1 = parte1 >> 16;
+        putc(parte1, esc_arq);
+
+        parte2 = valor & 0x00FF00;
+        parte2 = parte2 >> 8;
+        putc(parte2, esc_arq);
+
+        parte3 = valor & 0x0000FF;
+        putc(parte3, esc_arq);
+    }
+    
+    // se a string tera 2 caracteres
+    else if (qtd_caracter == 2)
+    {
+        // pega o valor em bits da string
+        valor = (strchr(conversor, linha[0]) - conversor) << 18;
+        valor += (strchr(conversor, linha[1]) - conversor) << 12;
+        valor += (strchr(conversor, linha[2]) - conversor) << 6;
+
+        // pega e imprime o valor de cada um dos 2 caracteres individualmente
+        parte1 = valor & 0xFF0000;
+        parte1 = parte1 >> 16;
+        putc(parte1, esc_arq);
+
+        parte2 = valor & 0x00FF00;
+        parte2 = parte2 >> 8;
+        putc(parte2, esc_arq);
+    }
+
+    // se a string tem apenas 1 caractere
+    else
+    {
+        // pega o valor em bits da string
+        valor = (strchr(conversor, linha[0]) - conversor) << 18;
+        valor += (strchr(conversor, linha[1]) - conversor) << 12;
+
+        // pega e imprime o valor do caracter
+        parte1 = valor & 0xFF0000;
+        parte1 = parte1 >> 16;
+        putc(parte1, esc_arq);
+    }
 }

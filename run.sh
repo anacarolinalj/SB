@@ -5,13 +5,7 @@ echo "Done with compilation"
 
 echo "Starting tests"
 
-# toy tests
-#echo "test1"
-#./exe < tests/test1.txt
-#echo "test2"
-#./exe file1.txt < tests/test2.txt
-#echo "test3"
-#./exe file1.txt 2
+# simple tests codificacao
 #echo "real tests"
 #./exe real1.txt 1  
 #./exe real2.txt 1
@@ -22,3 +16,31 @@ echo "Starting tests"
 #echo "test on duran"
 #./exe duran.mp3 1 # o nome Duran Duran foi substituido
 #diff 
+
+#simple tests decodificacao
+#./exe real3.txt 2
+
+# teste integrando decodificacao e codificacao - da certo
+./exe ff 1
+./exe codifica_64 2
+diff ff decodifica_64
+echo "done"
+
+# teste integrando decodificacao e codificacao em um arquivo grande passado
+#./exe a.pdf 1
+#./exe codifica_64 2
+#diff a.pdf decodifica_64
+#echo "done"
+
+# teste integrando decodificacao e codificacao no mp3
+#./exe b.mp3 1
+#./exe codificado_64 2
+#diff b.mp3 decodifica-64
+#echo "done"
+
+# teste integrando decodificacao e codificacao no .jpg
+#./exe c.jpg 1
+#./exe codificado_64 2
+#diff c.jpg decodifica-64
+#echo "done"
+

@@ -33,3 +33,9 @@ void codifica_64_comp1(char linha[], FILE* esc_arq);
  * a funcao nao retorna nada
  */
 void decodifica_64(char nome_arq[]);
+
+/*
+ * funcao para decodificar uma string de comprimento 4
+ * que foi codificada na base 64
+ */
+void decodifica_64_24(char linha[], FILE* esc_arq);
