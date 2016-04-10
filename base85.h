@@ -8,4 +8,5 @@
 
 void codifica85(char nome_arq[]);
 void codifica85bytes(uint8_t bytes[], FILE* esc_arq, int qtd);
-
+void decodifica85(char nome_arq[]);
+void decodifica85bytes(uint8_t bytes[], FILE* esc_arq, int qtd);
