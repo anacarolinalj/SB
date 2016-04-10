@@ -1,4 +1,0 @@
-file1.txt
-2
-
-## teste para ver se reconhece os dois parametros sem o usuario passar por linha de comando
