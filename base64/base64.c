@@ -76,7 +76,8 @@ void codifica64(char nome_arq[])
     uint8_t bits24[3];
     char nome_escrita[MEDIUM_SIZE] = "codifica64";
     uint8_t* p_aux;
-    int comprimento, result;
+    int comprimento, qtd_car; 
+    int car_linha = 0;
 
     // abre arquivo binario para leitura do seu binario 
     le_arq = fopen(nome_arq, "rb");
@@ -100,42 +101,39 @@ void codifica64(char nome_arq[])
         // le tres bytes, ou o que der do arquivo e poe na string 
         p_aux = malloc(sizeof(uint8_t));
         p_aux = bits24;
-        for (comprimento = 0; comprimento < 3; comprimento++)
+        comprimento = fread(p_aux, 1, BYTE_POR_VEZ, le_arq);
+
+        // se chegamos ao fim do arquivo, sai 
+        if (comprimento == 0)
         {
-            result = fread(p_aux, 1, 1, le_arq);
-            if (result == 0)
-            {
-                break;
-            }
-            p_aux++;
+            break;
         }
 
-        // se ha tres caracteres a considerar
-        if (comprimento == 3)
+        // acrescenta bytes de 0 para preencher string
+        for (int i = comprimento; i < 3; i++)
         {
-            codifica64_comp3(bits24, esc_arq); 
+            bits24[i] = 0;
         }
 
-        // se soh ha dois caracteres a considerar
-        else if (comprimento == 2)
-        {
-            codifica64_comp2(bits24, esc_arq);
-        }
+        // pega quantidade de caracteres a ser escrita
+        qtd_car = comprimento + 1; 
 
-        // se soh ha um caracter a considerar
-        else if (comprimento == 1)
-        {
-            codifica64_comp1(bits24, esc_arq);
-        }
+        // codifica os 24 bits 
+        codifica24(bits24, esc_arq, qtd_car);
 
-        // se nao ha nenhum caracter a considerar, passa para proxima iteracao
-        else
+        // incrementa os caracteres escritos na linha e imprime \n se chegamos a 76
+        car_linha += 4;
+        if (car_linha == 76)
         {
-            continue;
+            putc('\n', esc_arq);
+            car_linha = 0;
         }
 
     }
     
+    // depende do SO?
+    putc('\n', esc_arq);
+
     // fecha arquivos abertos
     fclose(le_arq);
     fclose(esc_arq);
@@ -146,9 +144,8 @@ void decodifica64(char nome_arq[])
     FILE *le_arq, *esc_arq;
     char nome_escrita[MEDIUM_SIZE] = "decodifica64";
     uint8_t bytes[4];
-    uint8_t* p_aux;
-    int result;
-    int comprimento;
+    uint8_t  *p_aux, *temp;
+    int comprimento, car_linha = 0; 
     
     // abre arquivo para leitura
     le_arq = fopen(nome_arq, "rb");
@@ -169,18 +166,18 @@ void decodifica64(char nome_arq[])
     // enquanto nao chegamos ao fim do arquivo 
     while (!feof(le_arq))
     {
-        // le tres bytes, ou o que der do arquivo e poe na string 
+        // le quatro bytes, ou o que der do arquivo e poe na string 
         p_aux = malloc(sizeof(uint8_t));
         p_aux = bytes;
-        for (comprimento = 0; comprimento < 4; comprimento++)
+        comprimento = fread(p_aux, 1, BYTES_DECODIFICA, le_arq);
+
+        // incrementa quantidade de caracteres lido na linha e se for igual a 76 le o \n
+        car_linha += 4; 
+        if (car_linha == 76)
         {
-            result = fread(p_aux, 1, 1, le_arq);
-            if (result == 0)
-            {
-                p_aux++;
-                break;
-            }
-            p_aux++;
+            temp = malloc(sizeof(uint8_t));
+            fread(temp, 1, 1, le_arq);
+            car_linha = 0;
         }
 
         // ocasionalmente no fim de arquivo o comprimento pode ser menor do que 4
@@ -199,76 +196,35 @@ void decodifica64(char nome_arq[])
     fclose(esc_arq);
 }
 
-void codifica64_comp3(uint8_t bits24[], FILE* esc_arq)
+void codifica24(uint8_t bits24[], FILE* esc_arq, int qtd_car)
 {
-    int valor, parte1, parte2, parte3, parte4;
+    uint32_t valor = 0;
+    uint8_t parte[3];
 
-    // obtem valor em bytes dos 3 primeiros caracteres
+    // obtem valor em bytes do array 
     valor = (bits24[0] << 16) & 0x00FFFFFF;
     valor += (bits24[1] << 8) & 0x0000FFFF;
     valor += (bits24[2]) & 0x000000FF;
 
-    // obtem valor de cada uma das 4 partes da string e imprime no arquivo de saida
-    parte1 = valor & 0xFC0000;
-    parte1 = parte1 >> 18;
-    putc(conversor[parte1], esc_arq);
 
-    parte2 = valor & 0x03F000;
-    parte2 = parte2 >> 12;
-    putc(conversor[parte2], esc_arq);
+    // obtem valor de cada parte da string
+    parte[0] = (valor & 0x00FC0000) >> 18;
+    parte[1] = (valor & 0x0003F000) >> 12;
+    parte[2] = (valor & 0x00000FC0) >> 6;
+    parte[3] = (valor & 0x0000003F) >> 0;
 
-    parte3 = valor & 0x000FC0;
-    parte3 = parte3 >> 6;
-    putc(conversor[parte3], esc_arq);
+    // escreve caracteres
+    for (int i = 0; i < qtd_car; i++)
+    {
+        putc(conversor[parte[i]], esc_arq);
+    }
 
-    parte4 = valor & 0x00003F;
-    putc(conversor[parte4], esc_arq);
-}
+    // escreve sinal de igual, se necessario
+    for (int i = qtd_car; i < 4; i++)
+    {
+        putc('=', esc_arq);
+    }
 
-void codifica64_comp2(uint8_t bits24[], FILE* esc_arq)
-{
-    int valor, parte1, parte2, parte3;
-
-    // obtem valor dos 2 caracteres concatenados
-    valor = (bits24[0] << 16) & 0x00FFFFFF;
-    valor += (bits24[1] << 8) & 0X0000FFFF;
-
-    // obtem valor das tres partes da string
-    parte1 = valor & 0xFC0000;
-    parte1 = parte1 >> 18;
-    putc(conversor[parte1], esc_arq);
-
-    parte2 = valor & 0x03F000;
-    parte2 = parte2 >> 12;
-    putc(conversor[parte2], esc_arq);
-
-    parte3 = valor & 0x000FC0;
-    parte3 = parte3 >> 6;
-    putc(conversor[parte3], esc_arq);
-
-    // o ultimo simbolo eh um sinal de igual
-    putc('=', esc_arq);
-}
-
-void codifica64_comp1(uint8_t bits24[], FILE* esc_arq)
-{
-    int valor, parte1, parte2;
-
-    // obtem valor do 1 caractere
-    valor = (bits24[0] << 16) & 0x00FFFFFF;
-
-    // obtem valor das duas partes da string
-    parte1 = valor & 0xFC0000;
-    parte1 = parte1 >> 18;
-    putc(conversor[parte1], esc_arq);
-
-    parte2 = valor & 0x03F000;
-    parte2 = parte2 >> 12;
-    putc(conversor[parte2], esc_arq);
-
-    // os dois ultimos simbolos sao sinais de igual
-    putc('=', esc_arq);
-    putc('=', esc_arq);
 }
 
 void decodifica64_24(uint8_t bytes[], FILE* esc_arq)

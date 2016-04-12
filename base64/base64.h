@@ -5,6 +5,7 @@
 #define MEDIUM_SIZE 50
 #define MAX_SIZE 100
 #define BYTE_POR_VEZ 3
+#define BYTES_DECODIFICA 4
 
 /*
  * funcao para codificacao de um arquivo binario, usando base 64
@@ -14,17 +15,10 @@
  */
 void codifica64(char nome_arq[]);
 
-/* funcao para codificar uma string de comprimento 3 para base64
+/*
+ * funcao para codificar em base 64 os 24 bits
  */
-void codifica64_comp3(uint8_t bits24[], FILE* esc_arq);
-
-/* funcao para codificar uma string de comprimento 2 para base64
- */
-void codifica64_comp2(uint8_t bits24[], FILE* esc_arq);
-
-/* funcao para codificar uma string de comprimento 1 para base64
- */
-void codifica64_comp1(uint8_t bits24[], FILE* esc_arq);
+void codifica24(uint8_t bits24[], FILE* esc_arq, int qtd_car); 
 
 /* 
  * funcao para decodificacao de um arquivo binario, usando base 64

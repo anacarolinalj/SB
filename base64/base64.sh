@@ -2,21 +2,35 @@
 
 gcc -Wall -std=c99 -g -o b64 base64.c
 
-./b64 a.pdf 1
-diff a.pdf decodifica64
+./b64 b.mp3 2
+diff cod codifica64 
+echo "finished encoding"
 
 ./b64 b.mp3 1
 diff b.mp3 decodifica64
+cmp b.mp3 decodifica64
+
+./b64 a.pdf 1
+diff a.pdf decodifica64
+echo "done with a"
+
+./b64 b.mp3 1
+diff b.mp3 decodifica64
+echo "done with b"
 
 ./b64 c.jpg 1 
 diff c.jpg decodifica64
+echo "done with c"
 
 ./b64 d.mp4 1
 diff d.mp4 decodifica64
+echo "done with d"
 
 # simple tests codificacao
 #echo "real tests"
 #./exe real1.txt 1  
+#./b64 temp.txt 1
+#diff temp.txt decodifica64
 #./exe real2.txt 1
 
 # test on given files
