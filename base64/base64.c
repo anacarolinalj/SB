@@ -99,7 +99,6 @@ void codifica64(char nome_arq[])
     while (!feof(le_arq))
     {
         // le tres bytes, ou o que der do arquivo e poe na string 
-        p_aux = malloc(sizeof(uint8_t));
         p_aux = bits24;
         comprimento = fread(p_aux, 1, BYTE_POR_VEZ, le_arq);
 
@@ -131,9 +130,6 @@ void codifica64(char nome_arq[])
 
     }
     
-    // depende do SO?
-    putc('\n', esc_arq);
-
     // fecha arquivos abertos
     fclose(le_arq);
     fclose(esc_arq);
@@ -163,11 +159,13 @@ void decodifica64(char nome_arq[])
         exit(EXIT_FAILURE);
     }
 
+    // aloca espaco 
+    temp = malloc(sizeof(uint8_t));
+
     // enquanto nao chegamos ao fim do arquivo 
     while (!feof(le_arq))
     {
         // le quatro bytes, ou o que der do arquivo e poe na string 
-        p_aux = malloc(sizeof(uint8_t));
         p_aux = bytes;
         comprimento = fread(p_aux, 1, BYTES_DECODIFICA, le_arq);
 
@@ -175,7 +173,6 @@ void decodifica64(char nome_arq[])
         car_linha += 4; 
         if (car_linha == 76)
         {
-            temp = malloc(sizeof(uint8_t));
             fread(temp, 1, 1, le_arq);
             car_linha = 0;
         }
@@ -190,6 +187,9 @@ void decodifica64(char nome_arq[])
         // decodifica sequencia de 4 caracteres
         decodifica64_24(bytes, esc_arq);
     }
+
+    // libera espaco alocado
+    free(temp);
 
     // fecha arquivos abertos
     fclose(le_arq);
