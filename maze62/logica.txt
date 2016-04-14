@@ -1,0 +1,66 @@
+Decodificação:
+
+O nome do arquivo a ser decodificado é repassado para a função decodificacao(), que possui as seguintes variáveis:
+input: armazenará os bytes que serão lidos do arquivo; 
+lido: conta a quantidade de bits que foram lidos em um determinado byte até o momento.
+falta: conta quantos bits faltam para completar o byte.
+v: armazena o caractere decodificado (de alfanumérico para hexadecimal).
+input_resto: guarda a parcela do input que será utilizada no próximo byte.
+entrada: arquivo que será lido.
+
+Primeiramente, a função verifica se o arquivo está vazio. Se não, entra num loop que lê um caractere ASCII do arquivo a cada iteração.
+Se a quantidade de bits que faltam para formar o byte atual for maior que 6, a variável 'lido' recebe 6 (pois todos os bits do caractere atual serão lidos e concatenados com o byte que está sendo formado). Senão, 'lido' recebe 'falta', que será um número menor que 6.
+
+Em seguida, o caractere lido é transformado de alfanumérico para o seu correspondente em hexadecimal. Se ele for diferente de A e de B, a função de concatenação de bits é chamada.
+
+A função de concatenação atualiza a variável 'input_resto', concatenando o valor atual dessa variável com os últimos bits que foram lidos. Após a chamada da função de concatenação, chama-se a função forma_byte(v,lido,falta,input_resto,caso,input). Essa função verifica se a variável input_resto já conseguiu ler 8 bits (o que acontece quando 'falta' for igual a 'lido'). 
+
+Se sim, ela calcula o input_resto da próxima iteração, caso bits do último caractere que foi lido tenham sobrado na hora da concatenação ou o zera. Após isso, o byte é escrito no arquivo de saída.
+Após a chamada de forma_byte, chama-se a função seta_falta, que simplesmente muda o valor de falta para a próxima iteração. Subtrai-se 'lido' de falta. Se o resultado for zero e a quantidade de caracteres lidos forem menores que 5 ou 6, falta recebe lido mais 2. Senão, recebe 8.
+
+Se o caractere lido em decodificacao() for A ou B, chama-se a função caso_especial(v,entrada,input,lido,falta, input_resto), pois esse caso deve ser tratado separadamente. Ela possui as seguintes variáveis:
+v1: Código hexadecimal do alfanumérico de A ou de B;
+input1: Guarda o último byte lido pela funçao que chamou caso_especial();
+lido1: recebe lido;
+falta_esp: recebe último valor de falta;
+input_resto_esp: recebe input_resto;
+v2: Armazenará o código do próximo caractere que será lido;
+input2: Armazena o novo input.
+
+A função lê o próximo caractere do arquivo e o decodifica. Em seguida, checa se o caractere A ou B corresponde a 0x00, 0x01, 0x3e ou 0x3f com a função acha_codigo_caso_especial(input1,v1,v2). Se o primeiro caractere for A e o último bit de v2 for 0, v1 recebe 0x00, senão recebe 0x3e. Se for B, recebe 0x01 ou 0x3f, dependendo do último bit de v2. Com o valor real de v1 decidido, chama-se as três funções já descritas (concatenação, forma_byte e seta_falta). Em seguida faz-se o mesmo para o segundo caractere, v2, levando-se em conta que só se pode ler 5 dos seus bits. 
+
+-------------------------------------------------------
+Codificação
+
+O nome do arquivo a ser codificado é repassado para a função codificacao(), que possui as seguintes variáveis:
+input: armazena um byte lido do arquivo;
+output: armazena o caractere que será escrito na saída;
+input_resto: armazena os bits que não farão parte do output da iteração atual, mas farão parte do próximo cv;
+cv: armazena o valor atual (concatenação de input_resto com os bits que serão lidos na iteração atual);
+resto: cv%62;
+lidos: quantidade de bits do byte atual que serão concatenados a cv;
+desp: quantidade de bits do último byte lido que não serão usados na iteração atual.
+
+O valor atual (cv) recebe o novo input shiftado a quantidade de caracteres que serão desprezados concatenado com o input_resto da leitura anterior.
+O resto da divisão de cv por 62 é recebido pela variável resto e se esse resto for diferente de 0 e de 1, verifica-se se a quantidade de caracteres que foram desprezados foi 7, 6 ou menos. 
+
+Se tiver sido 7, calcula-se a representação alfanumérica do resto e calcula-se um novo cv shiftando-se em um bit o input atual para a esquerda e depois duas vezes para a direita (para eliminar os bits mais e menos significativos).
+input_resto recebe o último bit do input e faz shift de 5 bits para a direita. Verifica-se então o resto da divisão de cv por 62. Se for diferente de 0 e de 1, calcula-se o valor alfanumérico do resto e atualiza-se o valor das variáveis lido e desp. Se for 0 ou 1, chama-se a função do caso_especial() (descrita adiante).
+
+Se a quantidade de bits desprezados da leitura atual for 6, calcula-se o alfanumérico do resto e o valor do novo cv (os 6 últimos bits menos significativos do input) e o novo resto. O alfanumérico é calculado se o resto do novo cv/62 for diferente de 0 ou 1. Caso contrário chama-se caso_especial().
+
+Caso a quantidade de bits desprezados seja menor que 6 e 7, o input_resto será atualizado para receber os bits desprezados com um shift de (6-desp) (para que eles sejam os bits mais significativos no próximo cv, que terá no máximo 6 bits).
+Calcula-se o alfanumérico e atualiza-se a quantidade de bits que serão lidos e a quantidade que será desprezada no byte da próxima iteração.
+
+Caso cv/62 seja 0 ou 1, chama-se a função caso_especial().
+Primeiramente, ela calcula o alfanumérico do resto e o quociente da divisão de cv por 62.
+Se a quantidade de bits desprezados for menor ou igual a 4, input_resto_esp recebe os bits desprezados e faz um shift de (6-desp), desp_esp e lidos_esp são atualizados dependendo do valor do desp_esp atual.
+Então lê-se um novo byte do arquivo de entrada e calcula-se o novo cv, concatenando-se os (5-desp) bits mais significativos do novo byte com o input_resto_esp e o quociente.
+
+Se a quantidade de desprezados for 5, cv recebe os 5 bits menos significativos do input, faz um shift de 1 para a esquerda e os concatena com o quociente.
+Se os bits desprezados totalizarem 6, cv recebe os últimos 6 bits, apaga o último e concatena o resultado com o quociente.
+Se for 7, apaga-se os dois últimos bits e faz-se um shift de 1 para a direita (para apagar o último bit desprezado). 
+Se for 8, apagam-se os 3 últimos bits e faz-se um shift de 2 para a direita.
+Após o cálculo do cv nesses últimos 4 casos, calcula-se o resto de cv/62, o alfanumérico de cv, e atualiza-se lidos_esp e desp_esp e o input_resto_esp, de acordo com o que sobrará e deverá ser lido na próxima iteração.
+
+Por fim, verifica-se se o resto é igual a 1 ou 0. Se for, chama-se a função caso_especial novamente com os novos valores.
